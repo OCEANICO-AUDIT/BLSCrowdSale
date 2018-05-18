@@ -206,9 +206,9 @@ contract BLSCrowdSale is StandardToken, usingOraclize, KYCBase {
 
 
         //oraclize
-        oraclize_setCustomGasPrice(100000000000 wei); // set the gas price a little bit higher, so the pricefeed definitely works
-        updatePrice();
-        oraclizeQueryCost = oraclize_getPrice("URL");
+//        oraclize_setCustomGasPrice(100000000000 wei); // set the gas price a little bit higher, so the pricefeed definitely works
+//        updatePrice();
+//        oraclizeQueryCost = oraclize_getPrice("URL");
     }
 
     //// oraclize START
@@ -313,12 +313,12 @@ contract BLSCrowdSale is StandardToken, usingOraclize, KYCBase {
         require(now <= fundingEndTime);
       //check if the user send funds to the contract
         require(msg.value > 0);
-        uint256 cents = SafeMath.mul(msg.value, ETH_USD_EXCHANGE_RATE_IN_CENTS);
+        uint256 cents = SafeMath.mul(msg.value, ETH_USD_EXCHANGE_RATE_IN_CENTS) / 1 ether;
         uint256 dollars = cents / 100;
         require(dollars >= USD_MIN_DEP);
         // return the contribution if the cap has been reached already
         uint256 checkedReceivedEth = SafeMath.add(allReceivedEth, msg.value);
-        uint256 total_cap = SafeMath.mul(checkedReceivedEth, ETH_USD_EXCHANGE_RATE_IN_CENTS);
+        uint256 total_cap = SafeMath.mul(checkedReceivedEth, ETH_USD_EXCHANGE_RATE_IN_CENTS) / 1 ether;
         require(total_cap <= USD_HARD_CAP*100);
 
         // calculate the token amount
@@ -540,7 +540,7 @@ contract BLSCrowdSale is StandardToken, usingOraclize, KYCBase {
         // Multiply with percentage
         uint256 newValue = SafeMath.mul(value, percentage);
         // Remove the 5 extra decimals
-        newValue = newValue / 10**5;
+        newValue = newValue * 10**decimals;
         return newValue;
     }
 
