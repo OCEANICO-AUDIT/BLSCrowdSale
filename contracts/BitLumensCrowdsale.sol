@@ -176,31 +176,47 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
     function releaseTokensTo(address buyer) internal returns(bool) {
         // needs to be started
         require(started());
-        // and not ended
         require(!ended());
+
+        //get the amount send in wei
         uint256 weiAmount = msg.value;
-        uint256 WeiDollars = weiAmount.mul(ETH_USD_EXCHANGE_CENTS) / 100;
+
+
+        uint256 WeiDollars = weiAmount.mul(ETH_USD_EXCHANGE_CENTS);
+        // ammount of dollars X 1e18 (1token)
+        WeiDollars = WeiDollars.div(100);
+
+        //calculating number of tokens x 10 to prevent decemil
         uint256 currentPrice = price();
         uint tokens = WeiDollars.mul(currentPrice);
-        tokens = tokens.div(10); //correct price rate
-        //calculate tokon Raised
-        uint tokenRaised = totalTokens - remainingTokens;
-        // must be less than hard cap
 
+        //fix the number of tokens
+        tokens = tokens.div(10);
+
+        //calculate tokens Raised by subtracting total tokens from remaining tokens
+        uint tokenRaised = totalTokens.sub(remainingTokens) ;
+
+        // check if total token raised + the tokens calculated for investor <= (pre ico token limit)
         if(now < roundTwoTime ){
           require(tokenRaised.add(tokens) <= BLS_PRE_ICO);
         }
 
-
+        //check if total token raised + the tokens calculated for investor <= (total token cap)
         require(tokenRaised.add(tokens) <= BLS_TOTAL_CAP);
-        weiRaised = weiRaised + weiAmount;
+
+        //check if hard cap is reached
+        weiRaised = weiRaised.add(weiAmount);
         // total usd in wallet
         uint centsWeiRaised = weiRaised.mul(ETH_USD_EXCHANGE_CENTS);
         uint goal  = USD_HARD_CAP * (10**18) * (10**2);
+
         // if 25,000,000 $$ raised stop the ico
         require(centsWeiRaised <= goal);
+
+        //decrease the number of remaining tokens
         remainingTokens = remainingTokens.sub(tokens);
-        // mint tokens and transfer funds
+
+        // mint tokens and transfer funds to investor
         token.mint(buyer, tokens);
         forwardFunds();
         TokenPurchase(msg.sender, buyer, weiAmount, tokens);
@@ -217,10 +233,10 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
       require(ended());
 
       uint centsWeiRaised = weiRaised.mul(ETH_USD_EXCHANGE_CENTS);
-      uint goal  = USD_SOFT_CAP * (10**18) * (10**2);
+      uint minGoal  = USD_SOFT_CAP * (10**18) * (10**2);
 
       // Check the soft goal reaching
-      if(centsWeiRaised >= goal) {
+      if(centsWeiRaised >= minGoal) {
 
         //token Raised
         uint tokenRaised = totalTokens - remainingTokens;
@@ -249,7 +265,6 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
       else {
         // if goal NOT reached
         // ICO not successfully finalized
-        FinalizedNOK();
         finalizeNOK();
       }
     }
