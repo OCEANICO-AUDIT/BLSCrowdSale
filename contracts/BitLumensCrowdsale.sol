@@ -14,12 +14,17 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
     enum State {Running,Success,Failure}
 
 
+    // Current ETH/USD exchange rate
+    uint256 public ETH_USD_EXCHANGE_CENTS= 500;// must be set by orcalize
+
+    // Everything oraclize related
+    event updatedPrice(string price);
+    event newOraclizeQuery(string description);
+    uint public oraclizeQueryCost;
+
     uint public etherPriceUSD;
     event Log(string text);
 
-
-    // Current ETH/USD exchange rate
-    uint256 public ETH_USD_EXCHANGE_CENTS = 500; // set by oraclize
 
     uint public USD_SOFT_CAP;
     uint public USD_HARD_CAP;
@@ -152,25 +157,41 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
         vault = new RefundVault(_wallet);
 
         state = State.Running;
-        //update();
+
+       oraclize_setCustomGasPrice(100000000000 wei); // set the gas price a little bit higher, so the pricefeed definitely works
+       updatePrice();
+        oraclizeQueryCost = oraclize_getPrice("URL");
 
     }
 
 
-    //// oraclize START
-    function __callback(bytes32 _myid, string _result) {
-         require (msg.sender == oraclize_cbAddress());
-         Log(_result);
-         etherPriceUSD = parseInt(_result, 2);
-      }
-    function update() payable {
-       oraclize_query("URL","json(https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD).USD");
-    }
-    //// oraclize END
 
-      function orcPrice()  public view returns(uint){
-        return(etherPriceUSD);
-      }
+    /// oraclize START
+
+        // @dev oraclize is called recursively here - once a callback fetches the newest ETH price, the next callback is scheduled for the next hour again
+        function __callback(bytes32 myid, string result) {
+            require(msg.sender == oraclize_cbAddress());
+            // setting the token price here
+            ETH_USD_EXCHANGE_CENTS = SafeMath.parse(result);
+            updatedPrice(result);
+            // fetch the next price
+            updatePrice();
+        }
+
+        function updatePrice() payable {    // can be left public as a way for replenishing contract's ETH balance, just in case
+            if (msg.sender != oraclize_cbAddress()) {
+                require(msg.value >= 200 finney);
+            }
+            if (oraclize_getPrice("URL") > this.balance) {
+                newOraclizeQuery("Oraclize query was NOT sent, please add some ETH to cover for the query fee");
+            } else {
+                newOraclizeQuery("Oraclize sent, wait..");
+                // Schedule query in 1 hour. Set the gas amount to 220000, as parsing in __callback takes around 70000 - we play it safe.
+                //will be changed to higher value in real network
+                oraclize_query(60, "URL", "json(https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD).USD", 220000);
+            }
+        }
+        //// oraclize END
 
     // function that is called from KYCBase
     function releaseTokensTo(address buyer) internal returns(bool) {
