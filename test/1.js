@@ -567,7 +567,6 @@ describe('ICO sale', function() {
       from: investor
     }).should.be.rejectedWith(EVMRevert);
 
-  //  const walletPreBalance = web3.eth.getBalance(wallet);
     // call finalize
     await this.crowdsale.finalize(BITLUMENSACCOUNT,TEAMACCOUNT,BOUNTYACCOUNT,{from:wallet});
 
@@ -577,12 +576,12 @@ describe('ICO sale', function() {
 
     var teamTokens = await this.token.balanceOf(TEAMACCOUNT);
     //console.log(web3.fromWei(teamTokens,'ether'));
-    teamTokens.should.be.bignumber.equal(web3.toWei(9900, 'ether'));
+    teamTokens.should.be.bignumber.equal(web3.toWei(9600, 'ether'));
 
 
     var bountyTokens = await this.token.balanceOf(BOUNTYACCOUNT);
     //consle.log(web3.fromWei(bountyTokens,'ether'));
-    bountyTokens.should.be.bignumber.equal(web3.toWei(100, 'ether'));
+    bountyTokens.should.be.bignumber.equal(web3.toWei(400, 'ether'));
 
     // state should be success (=1)
     state = await this.crowdsale.state();

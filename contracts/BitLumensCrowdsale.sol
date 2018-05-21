@@ -159,7 +159,6 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
         state = State.Running;
 
        oraclize_setCustomGasPrice(100000000000 wei); // set the gas price a little bit higher, so the pricefeed definitely works
-
        updatePrice();
        oraclizeQueryCost = oraclize_getPrice("URL");
 
@@ -264,13 +263,17 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
         uint tokenRaised = totalTokens - remainingTokens;
         //bitlumes tokes 25% equivelent to (tokenraied / 2) (token raised = 50 %)
         uint bitlumensTokens = tokenRaised.div(2);
-        uint bountyTokens = bitlumensTokens.div(100);
+        uint bountyTokens = 4 * bitlumensTokens.div(100);
         uint TeamTokens = bitlumensTokens.sub(bountyTokens);
 
 
         token.mint(bitlumensAccount, bitlumensTokens);
         token.mint(teamAccount, TeamTokens);
         token.mint(bountyAccount, bountyTokens);
+
+        teamTokensDelivered = true;
+        bountyDelivered = true;
+        bitlumensDelivered = true;
 
         // if goal reached
         // stop the minting
