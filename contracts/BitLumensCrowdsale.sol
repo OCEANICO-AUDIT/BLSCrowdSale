@@ -124,6 +124,7 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
         require(_token != address(0));
         require(_wallet != address(0));
 
+        //please make sure that the start in 3)depoly_tokenSale is larger than now before migrate
         require(_startTime > now);
         require (_startTime < _roundTwoTime);
         require (_roundTwoTime < _roundThreeTime);
@@ -159,8 +160,9 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
         state = State.Running;
 
        oraclize_setCustomGasPrice(100000000000 wei); // set the gas price a little bit higher, so the pricefeed definitely works
+
        updatePrice();
-        oraclizeQueryCost = oraclize_getPrice("URL");
+       oraclizeQueryCost = oraclize_getPrice("URL");
 
     }
 
@@ -187,8 +189,8 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
             } else {
                 newOraclizeQuery("Oraclize sent, wait..");
                 // Schedule query in 1 hour. Set the gas amount to 220000, as parsing in __callback takes around 70000 - we play it safe.
-                //will be changed to higher value in real network
-                oraclize_query(60, "URL", "json(https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD).USD", 220000);
+                //the time will be changed to higher value in real network(60 - > 3600 )
+                oraclize_query(60, "URL", "json(https://min-api.cryptoc)ompare.com/data/price?fsym=ETH&tsyms=USD).USD", 220000);
             }
         }
         //// oraclize END
