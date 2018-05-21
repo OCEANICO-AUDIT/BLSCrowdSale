@@ -13,7 +13,6 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
     using  SafeMath for uint;
     enum State {Running,Success,Failure}
 
-
     // Current ETH/USD exchange rate
     uint256 public ETH_USD_EXCHANGE_CENTS= 500;// must be set by orcalize
 
@@ -190,7 +189,7 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
                 newOraclizeQuery("Oraclize sent, wait..");
                 // Schedule query in 1 hour. Set the gas amount to 220000, as parsing in __callback takes around 70000 - we play it safe.
                 //the time will be changed to higher value in real network(60 - > 3600 )
-                oraclize_query(60, "URL", "json(https://min-api.cryptoc)ompare.com/data/price?fsym=ETH&tsyms=USD).USD", 220000);
+                oraclize_query(60, "URL", "json(https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD).USD", 220000);
             }
         }
         //// oraclize END
