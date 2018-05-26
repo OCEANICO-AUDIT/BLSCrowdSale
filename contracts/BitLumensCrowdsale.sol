@@ -158,9 +158,9 @@ contract BitLumensCrowdsale is Ownable, ICOEngineInterface, KYCBase,usingOracliz
 
         state = State.Running;
 
-       oraclize_setCustomGasPrice(100000000000 wei); // set the gas price a little bit higher, so the pricefeed definitely works
-       updatePrice();
-       oraclizeQueryCost = oraclize_getPrice("URL");
+ //      oraclize_setCustomGasPrice(100000000000 wei); // set the gas price a little bit higher, so the pricefeed definitely works
+ //      updatePrice();
+ //      oraclizeQueryCost = oraclize_getPrice("URL");
 
     }
 
